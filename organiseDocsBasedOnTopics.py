@@ -2,11 +2,18 @@
 # author: alexandros ioannidis
 
 import os
+import sys
 import xml.etree.ElementTree as ET
+from lxml import etree
 import xml.dom.minidom
 from os.path import isfile, join
 from os import listdir
 import re
+from lxml.etree import tostring
+from itertools import chain
+
+
+from xml.etree import ElementTree
 
 # topic_list contains the unique train and test topics of the CLEF TAR e-Health Task 2 from 2017, 2018 and 2019.
 # complete CLEF 2017 topics list
@@ -98,6 +105,12 @@ def readCLEFtitle_query():
     return(clef_TQ_dict)
 
 
+def stringify_children(node):
+    parts = ([node.text] +  list(chain(*([c.text, tostring(c), c.tail] for c in node.getchildren()))) + [node.tail])
+    # filter removes possible Nones in texts and tails
+    return ''.join(filter(None, parts))
+
+
 def main(current_topic, qrels_filepath, path_to_CLEF_docs):
     topic_qrels_dict = readFeedbackQRELSintoDict(current_topic, qrels_filepath, path_to_CLEF_docs)
     # onlyfiles = [join(path_to_CLEF_docs, f) for f in listdir(path_to_CLEF_docs) if isfile(join(path_to_CLEF_docs, f))]    
@@ -108,28 +121,46 @@ def main(current_topic, qrels_filepath, path_to_CLEF_docs):
     
     for key, value in topic_qrels_dict.items():
         combinedText = ''
-        try:
-            xmlstr = open(key).read()
-            doc1 = xml.dom.minidom.parse(key)
-            title = doc1.getElementsByTagName('ArticleTitle')
-            try:
-                titleText = title[0].firstChild.data
-            except Exception as e:
-                titleText = title[0].lastChild.data    
-            abstractText = " "
-            root_node = ET.parse(key).getroot()
-            listElemTags = [elem.tag for elem in root_node.iter()]
-            if 'AbstractText' in listElemTags:
-                for AbstractText in root_node.iter('AbstractText'):
-                    abstractText += str(AbstractText.text)
-                combinedText = clef_TQ_dict[topic_qrels_dict[key][1]] + ' ' + titleText + ' ' + abstractText
-            else:
-                combinedText = clef_TQ_dict[topic_qrels_dict[key][1]] + ' ' + titleText
-        except Exception as e:
-            # print(xmlstr)
-            print('---------------', e, '---------------')      
-            combinedText = clef_TQ_dict[topic_qrels_dict[key][1]]
         
+        try:
+            
+            xmlstr = open(key).read()
+            
+            try:
+                
+                tree = etree.parse(key)
+                pmid = tree.xpath('//MedlineCitation/PMID[@Version="1"]')
+                pmid_str = pmid[0].text
+                
+                
+                doc1 = xml.dom.minidom.parse(key)
+                title = doc1.getElementsByTagName('ArticleTitle')            
+                                    
+                try:
+                    titleText = title[0].firstChild.data
+                except Exception as e:
+                    titleText = title[0].lastChild.data    
+                abstractText = " "
+                root_node = ET.parse(key).getroot()
+                listElemTags = [elem.tag for elem in root_node.iter()]
+                if 'AbstractText' in listElemTags:
+                    for AbstractText in root_node.iter('AbstractText'):
+                        abstractText += str(AbstractText.text)
+                    combinedText = pmid_str + ' ' + clef_TQ_dict[topic_qrels_dict[key]
+                                                    [1]] + ' ' + titleText + ' ' + abstractText
+                else:
+                    combinedText = pmid_str + ' ' + clef_TQ_dict[topic_qrels_dict[key]
+                                                    [1]] + ' ' + titleText
+            except Exception as e:
+                # print(xmlstr)
+                print('---------------', e, '---------------')      
+                combinedText = pmid_str + ' ' + \
+                    clef_TQ_dict[topic_qrels_dict[key][1]]
+        
+        except:
+            print('File ' + key + ' does not exist.')
+            
+            
         mainlistOfLists.append([topic_qrels_dict[key][0], combinedText])
     return(mainlistOfLists)
     
