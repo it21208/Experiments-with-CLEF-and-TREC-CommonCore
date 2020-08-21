@@ -8,47 +8,61 @@ import xml.dom.minidom
 from itertools import islice
 import xml.etree.ElementTree as ET
 import random
+from lxml import etree
 from bs4 import BeautifulSoup
     
-train_docs = 500
-dev_docs = 300
-test_docs = 200
+# train_docs = 500
+# dev_docs = 300
+# test_docs = 200
+
 
 def main(docs_folder, output_folder):
-    onlyfiles = [join(docs_folder, f) for f in listdir(
-        docs_folder) if isfile(join(docs_folder, f))]
+    onlyfiles = [join(docs_folder, f) for f in listdir(docs_folder) if isfile(join(docs_folder, f))]
     
     titles_and_abs = []
+    countNoAbs = 0
+    
     for idx, file in enumerate(onlyfiles):
+        combinedText = ''
         try:
             xmlstr = open(file).read()
-            doc1 = xml.dom.minidom.parse(file)
-            title = doc1.getElementsByTagName('ArticleTitle')
             try:
-                titleText = title[0].firstChild.data
-            except Exception as e:
-                titleText = title[0].lastChild.data
-            #print(idx, title)
-            abstractText = " "
-            root_node = ET.parse(file).getroot()
-            listElemTags = [elem.tag for elem in root_node.iter()]
-            combinedText = ''
-            if 'AbstractText' in listElemTags:                    
-                for AbstractText in root_node.iter('AbstractText'):
-                    abstractText += str(AbstractText.text)                    
-                combinedText = titleText + abstractText
-            else:            
-                combinedText = titleText 
-            titles_and_abs.append(combinedText)
-        except Exception as e:
-            #print(xmlstr)
-            print('---------------',e,'---------------')
-            #print(title[0].nodeName)
-            #print(title[0].firstChild.nodeValue)
-            #print(title[0].lastChild.data)
-            # if there is an error I might have to check the all childNodes 0, 1, 2, ...
-            #print(title[0].firstChild.childNodes[0].data)
-            #print(title[0].firstChild.nodeType)
+                tree = etree.parse(file)
+                pmid = tree.xpath('//MedlineCitation/PMID[@Version="1"]')
+                pmid_str = pmid[0].text
+                
+                doc1 = xml.dom.minidom.parse(file)
+                title = doc1.getElementsByTagName('ArticleTitle')
+                
+                try:
+                    titleText = title[0].firstChild.data
+                except:
+                    titleText = title[0].lastChild.data
+                
+                abstractText = " "
+                root_node = ET.parse(file).getroot()
+                listElemTags = [elem.tag for elem in root_node.iter()]
+                
+                if 'AbstractText' in listElemTags:                    
+                    for AbstractText in root_node.iter('AbstractText'):
+                        abstractText += str(AbstractText.text)                           
+                    combinedText = pmid_str + ' ' + titleText + ' ' + abstractText
+                else:            
+                    combinedText = pmid_str + ' ' + titleText         
+            
+            except:
+                try:
+                    combinedText = pmid_str + ' ' + titleText
+                    countNoAbs += 1
+                    print(countNoAbs, 'From file ', file, 'could not extract abstract')
+                except:
+                    combinedText = pmid_str
+                    print('From file ', file, 'could not extract title & abstract')
+                
+        except:
+            print('File ' + file + 'does not exist.')
+
+        titles_and_abs.append(combinedText)
     return(titles_and_abs)
 
 
@@ -73,6 +87,8 @@ if __name__ == "__main__":
     
     # split the list in 500 items (train_docs) , 300 items (dev_docs), 200 items (test_docs)
     # list of length in which we have to split 
+    
+    '''
     length_to_split = [500, 300, 200]     
     
     # Using islice 
@@ -95,27 +111,31 @@ if __name__ == "__main__":
         
     for i in range(length_to_split[2]):
         testList[i] = random.choice(labels) + "\t" + testList[i] +'\r'
-        
+    '''    
     
     ''' store train.tsv '''   
-    outfile = open(output_folder+"train.tsv", "w+")
-    temp = "\n".join(i for i in trainList)
-    outfile.write(temp)
-    outfile.close()
-    print('train.tsv saved')
+    # outfile = open(output_folder+"train.tsv", "w+")
+    # temp = "\n".join(i for i in trainList)
+    # outfile.write(temp)
+    # outfile.close()
+    # print('train.tsv saved')
     
     ''' store dev.tsv '''  
-    outfile = open(output_folder+"dev.tsv", "w+")
-    temp = "\n".join(i for i in devList)
-    outfile.write(temp)
-    outfile.close()
-    print('dev.tsv saved')
+    # outfile = open(output_folder+"dev.tsv", "w+")
+    # temp = "\n".join(i for i in devList)
+    # outfile.write(temp)
+    # outfile.close()
+    # print('dev.tsv saved')
     
     ''' store test.tsv '''  
-    outfile = open(output_folder+"test.tsv", "w+")
-    temp = "\n".join(i for i in testList)
+    # outfile = open(output_folder+"test.tsv", "w+")
+    # temp = "\n".join(i for i in testList)
+    # outfile.write(temp)
+    # outfile.close()
+    # print('test.tsv saved')
+    
+    outfile = open(output_folder+"data.tsv", "w+")
+    temp = "\n".join(i for i in combinedTitlesAbstracts)
     outfile.write(temp)
     outfile.close()
-    print('test.tsv saved')
-    
-    print('Done')
+    print('data.tsv saved')
