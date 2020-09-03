@@ -24,7 +24,33 @@ TOPIC_LIST = TOPIC_LIST_TEST_2017 + TOPIC_LIST_TEST_2018
 SimResults_filepath = '/home/pfb16181/resultsFSSVmeanPoolingWithCorrectedCorpus.txt'
 BM25Results_filepath = '/home/pfb16181/RetrievalAppSubset.pubmed5.seedDoc_title_and_query_and_queryExpansion_top20Terms_only_from_rel_docsResults.correct.res'
 
+
 def readTRECresultsIntoDict(results_filepath):
+    f = open(results_filepath, "r")
+    topic_doc_score_dict = {}
+    for i in TOPIC_LIST:
+        topic_doc_score_dict[i] = {}
+    flag = True
+    for line in f:
+        topic = line.split()[0]
+        doc = line.split()[2]
+        score = line.split()[4]            
+        if topic not in TOPIC_LIST:
+            continue
+        else:
+            if flag == True:
+                prev_topic = topic
+                max_score = score
+                flag = False
+            
+            if topic != prev_topic:
+                prev_topic = topic
+                max_score = score                    
+            
+            topic_doc_score_dict[topic][doc] = str(float(score)/float(max_score))
+    return(topic_doc_score_dict)
+
+def readSimTRECresultsIntoDict(results_filepath):
     f = open(results_filepath, "r")
     topic_doc_score_dict = {}
     for i in TOPIC_LIST:
@@ -41,7 +67,7 @@ def readTRECresultsIntoDict(results_filepath):
 
 BM25_topic_doc_score_dict = readTRECresultsIntoDict(BM25Results_filepath)
 print('finished creating BM25_topic_doc_score_list & BM25_topic_doc_score_dict')
-Sim_topic_doc_score_dict = readTRECresultsIntoDict(SimResults_filepath)
+Sim_topic_doc_score_dict = readSimTRECresultsIntoDict(SimResults_filepath)
 print('finished creating Sim_topic_doc_score_list & Sim_topic_doc_score_dict')
 
 LambdaParam_list = [0.0, 0.5, 1.0]
