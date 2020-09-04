@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # author = alexandros ioannidis
 
+# indexing schema 2+MHLMTA that means indexing multiple fields Title, Abstract, PMID, 
+# Authors, Journal Title, Year, Mesh Heading list, MedlineTA! In the 1_FSSV-mean_pooling T+Q+QE strategy we only use the Title and the Abstract of the parsed documents 
+
 from os import listdir
 from os.path import isfile, join
 import argparse
@@ -10,6 +13,7 @@ import xml.etree.ElementTree as ET
 import random
 from lxml import etree
 from bs4 import BeautifulSoup
+import sys
     
 # train_docs = 500
 # dev_docs = 300
@@ -23,7 +27,7 @@ def main(docs_folder, output_folder):
     countNoAbs = 0
     
     for idx, file in enumerate(onlyfiles):
-        combinedText = ''
+        combinedText = ' '
         try:
             xmlstr = open(file).read()
             try:
@@ -34,10 +38,64 @@ def main(docs_folder, output_folder):
                 doc1 = xml.dom.minidom.parse(file)
                 title = doc1.getElementsByTagName('ArticleTitle')
                 
+                # parsing Title
                 try:
                     titleText = title[0].firstChild.data
                 except:
                     titleText = title[0].lastChild.data
+                
+                # parsing year field
+                try:
+                    year = doc1.getElementsByTagName('Year')
+                    yearText = year[0].firstChild.nodeValue
+                except:
+                    print('Could not parse year field for file ', file)
+                
+                combinedText += ' '+yearText
+
+                #  parsing Journal title field
+                try:
+                    journalTitle = doc1.getElementsByTagName('Title')
+                    journalTitleText = journalTitle[0].firstChild.nodeValue
+                except:
+                    print('Could not parse Journal title field for file ', file)
+                
+                combinedText += ' '+journalTitleText
+                
+                # parsing Author List field
+                try:
+                    authorList = doc1.getElementsByTagName('AuthorList')
+                    authorListText = authorList[0].firstChild.nodeValue
+                except:
+                    print('Could not parse Author List field for file ', file)
+                
+                combinedText = ' '+authorListText
+                
+                # parsing Mesh Heading List
+                try:
+                    meshHeadingList = doc1.getElementsByTagName('MeshHeading')
+                    xLen = meshHeadingList.length
+                    meshHeadingListText = " "
+                    for i in range(xLen):
+                        cnt = 1
+                        for j in meshHeadingList[i].childNodes:
+                            if cnt == 2:
+                                meshHeadingListText  += " "+j.firstChild.nodeValue
+                            cnt += 1
+                except:
+                    print('Could not parse Mesh Heading List field for file ', file)
+                
+                combinedText = ' '+meshHeadingListText
+                
+                # parsing MedlineTA
+                try:
+                    medlineTA = doc1.getElementsByTagName('MedlineTA')
+                    MedlineTAText = medlineTA[0].firstChild.nodeValue
+                except: 
+                    print('Could not parse MedlineTA field for file ', file)
+                
+                combinedText = ' '+MedlineTAText
+                
                 
                 abstractText = " "
                 root_node = ET.parse(file).getroot()
@@ -46,17 +104,17 @@ def main(docs_folder, output_folder):
                 if 'AbstractText' in listElemTags:                    
                     for AbstractText in root_node.iter('AbstractText'):
                         abstractText += str(AbstractText.text)                           
-                    combinedText = pmid_str + ' ' + titleText + ' ' + abstractText
+                    combinedText = pmid_str + ' ' + titleText + ' ' + abstractText + combinedText
                 else:            
-                    combinedText = pmid_str + ' ' + titleText         
+                    combinedText = pmid_str + ' ' + titleText + combinedText
             
             except:
                 try:
-                    combinedText = pmid_str + ' ' + titleText
+                    combinedText = pmid_str + ' ' + titleText + combinedText
                     countNoAbs += 1
                     print(countNoAbs, 'From file ', file, 'could not extract abstract')
                 except:
-                    combinedText = pmid_str
+                    combinedText = pmid_str + ' ' + combinedText
                     print('From file ', file, 'could not extract title & abstract')
                 
         except:
@@ -134,8 +192,8 @@ if __name__ == "__main__":
     # outfile.close()
     # print('test.tsv saved')
     
-    outfile = open(output_folder+"data.tsv", "w+")
+    outfile = open(output_folder+"2MHLMTA_data.tsv", "w+")
     temp = "\n".join(i for i in combinedTitlesAbstracts)
     outfile.write(temp)
     outfile.close()
-    print('data.tsv saved')
+    print('2MHLMTA_data.tsv saved')
