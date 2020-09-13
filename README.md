@@ -1,1 +1,1 @@
-Some processing scripts to assist deep learning with Hedwigs BERT model.
+##### Some processing scripts for CLEF and TREC CommonCore data collections to assist deep learning with Hedwigs BERT and SBERT models.
