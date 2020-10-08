@@ -35,6 +35,7 @@ def main(docs_folder, output_folder):
             continue
         
         title = doc1.getElementsByTagName('hl1')
+        
         try:
             titleText = title[0].firstChild.nodeValue
         except Exception as e:
@@ -44,17 +45,46 @@ def main(docs_folder, output_folder):
         
         abstract = doc1.getElementsByTagName('block')
         
+        flagAbs = False
+        
         try:
             if abstract[0].getAttribute('class') == 'lead_paragraph':
                 abstractText = ""
                 for j in abstract[0].childNodes:
                     if j.firstChild is not None:
+                        # print(j.firstChild.nodeValue)
                         abstractText += " "+j.firstChild.nodeValue
+                        flagAbs = True
         except Exception as e:
             pass
-            
-        combinedText += abstractText+' '       
-            
+        
+        if flagAbs == True:
+            combinedText += abstractText+' '
+            flagAbs = False
+        
+        
+        abstractFullText = doc1.getElementsByTagName('block')
+        # print(len(abstractFullText))
+        flagFullText = False
+        
+        try:
+            if abstractFullText[1].getAttribute('class') == 'full_text':
+                abstractText2 = ""
+                for j in abstract[0].childNodes:
+                    if j.firstChild is not None:
+                        # print(j.firstChild.nodeValue)
+                        abstractText2 += " "+j.firstChild.nodeValue
+                        flagFullText = True
+        except Exception as e:
+            pass
+        
+        
+        
+        if flagFullText == True:
+            combinedText += abstractText2+' '
+            flagFullText = False
+               
+               
         titles_and_abs.append(combinedText)
         
     print('missed {} xml docs'.format(cnt))
@@ -80,8 +110,8 @@ if __name__ == "__main__":
     combinedTitlesAbstracts = main(docs_folder, output_folder)
     
     print('Length is {}'.format(len(combinedTitlesAbstracts)))
-    outfile = open(output_folder+"common_core_data.tsv", "w+")
+    outfile = open(output_folder+"common_core_data_with_FullText.tsv", "w+")
     temp = "\n".join(i for i in combinedTitlesAbstracts)
     outfile.write(temp)
     outfile.close()
-    print('common_core_data.tsv saved')
+    print('Done')
