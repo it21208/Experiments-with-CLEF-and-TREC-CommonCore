@@ -3,11 +3,14 @@ import sys
 from sentence_transformers import SentenceTransformer, util, models
 import scipy.spatial
 import pickle
+from collections import OrderedDict
+import operator
 
-pathToCorpus = '/home/pfb16181/common_core_data1855658.tsv'
+# pathToCorpus = '/home/pfb16181/common_core_data1855658.tsv'
+pathToCorpus = '/home/pfb16181/common_core_data_with_FullText.tsv'
 pathToQueries = '/home/pfb16181/NetBeansProjects/lucene4ir-master/data/TREC-CommonCore/topicsfile'
-# pathToTrecResults = '/home/pfb16181/NetBeansProjects/hedwig/scripts/run.core17.bm25+rm3.topics.core17.txt'
-pathToTrecResults = '/home/pfb16181/NetBeansProjects/hedwig/scripts/run.core17.bm25.topics.core17.txt'
+pathToTrecResults = '/home/pfb16181/NetBeansProjects/hedwig/scripts/run.core17.bm25+rm3.topics.core17.txt'
+# pathToTrecResults = '/home/pfb16181/NetBeansProjects/hedwig/scripts/run.core17.bm25.topics.core17.txt'
 
 def readInitialRanking(pathToTrecResults):
     # read trec results file
@@ -64,9 +67,24 @@ with open(pathToCorpus) as file_in:
             pass
 print('corpus size: {}'.format(len(corpus)))
 
+
+for idx, j in enumerate(corpus):
+    corpus[idx] = j.split('.')
+print('split documents into sentences in corpus data structure')
+
+for idx, (k, v) in enumerate(dictWithPMIDS.items()):
+    dictWithPMIDS[k] = v.split('.')
+print('split documents into sentences in dictWithPMIDS data structure')
+
+
 # Swap Keys and Values in Dictionary dictWithPMIDS
-new_dictWithPMIDS = dict([(value, key) for key, value in dictWithPMIDS.items()])
-print('saved dictionary with docs and ids')
+# new_dictWithPMIDS = dict([(value, key) for key, value in dictWithPMIDS.items()])
+New_dictWithPMIDS = {}
+for idx, (k, v) in enumerate(dictWithPMIDS.items()):
+    for i in v:
+        New_dictWithPMIDS[i] = k
+print('created dictionary New_dictWithPMIDS to relate sentences with pmids')
+
 
 corpus50 = {}
 resultslst = []
@@ -90,7 +108,8 @@ for query in queries:
         except Exception as e:
             pass
             
-    cur_corpus = corpus50[query.split(" ", 1)[0]]
+    # cur_corpus = corpus50[query.split(" ", 1)[0]]
+    cur_corpus = [item for sublist in corpus50[query.split(" ", 1)[0]] for item in sublist]
     cur_corpus = list(dict.fromkeys(cur_corpus))
     
     def removeDuplicateValuesFromDict(dictForIndexing):
@@ -110,6 +129,7 @@ for query in queries:
     
     closest_n = len(list_of_pmids_for_topic)-1
     ranking = 1
+    savedPMIDSwithTheirAggregatedSentenceScores = OrderedDict()  # declare ordered dictionary
     for query_embedding in query_embeddings:
         distances = scipy.spatial.distance.cdist([query_embedding], corpus_embeddings, "cosine")[0]
         results = zip(range(len(distances)), distances)
@@ -117,13 +137,40 @@ for query in queries:
         
         for idx, distance in results[0:closest_n]:
             try:
-                temp = str(queriesDict[query]) + " " + "QO" + " " + str(dictForIndexing[cur_corpus[idx]]) + " " + str(ranking) + " "  + "%.6f" % (1.00 - distance) + " " + "similarity.tar.title.and.query"
-                resultslst.append(temp)
-                ranking += 1
+                if New_dictWithPMIDS[cur_corpus[idx]] in savedPMIDSwithTheirAggregatedSentenceScores:
+                    # get maximum sentence score
+                    # if savedPMIDSwithTheirAggregatedSentenceScores[New_dictWithPMIDS[cur_corpus[idx]]] < distance: 
+                    #     savedPMIDSwithTheirAggregatedSentenceScores[New_dictWithPMIDS[cur_corpus[idx]]] =  distance
+                    
+                    # aggregate the sentences scores of each doc
+                    # i need to change this to aggregate the scores of the top 3 sentences and not just find the max score (as implemented above)
+                    savedPMIDSwithTheirAggregatedSentenceScores[New_dictWithPMIDS[cur_corpus[idx]]][0] += distance
+                    savedPMIDSwithTheirAggregatedSentenceScores[New_dictWithPMIDS[cur_corpus[idx]]][1] += 1
+                else:
+                    # initialise ordered dictionary with zeros to aggregate the sentences scores for each doc
+                    # savedPMIDSwithTheirAggregatedSentenceScores[New_dictWithPMIDS[cur_corpus[idx]]] =  distance
+                    savedPMIDSwithTheirAggregatedSentenceScores[New_dictWithPMIDS[cur_corpus[idx]]] = [distance, 1]
             except Exception as e:
                 pass
+        print('created savedPMIDSwithTheirAggregatedSentenceScores dictionary')
+        
+        savedPMIDSwithTheirAggregatedSentenceScores_withAverageScores = {}
+        for k, v in savedPMIDSwithTheirAggregatedSentenceScores.items():
+            savedPMIDSwithTheirAggregatedSentenceScores_withAverageScores[k] = v[0]/v[1]
             
-dirToWrite = '/home/pfb16181/NetBeansProjects/hedwig/scripts/resultsFSSVmeanPoolingCommonCore_bm25trec.txt'
+        
+        sorted_d = dict(sorted(savedPMIDSwithTheirAggregatedSentenceScores_withAverageScores.items(), key=operator.itemgetter(1),reverse=True))
+        # for k, v in savedPMIDSwithTheirAggregatedSentenceScores.items():
+        for k, v in sorted_d.items():
+            try:
+                temp = str(queriesDict[query]) + " " + "QO" + " " + k + " " + str(ranking) + " "  + str(v) + " " + "similarity.tar.title.and.query"
+                resultslst.append(temp)
+                ranking += 1
+            except:
+                pass
+        print('-------------------------------------------------')
+            
+dirToWrite = '/home/pfb16181/NetBeansProjects/hedwig/scripts/AverageofAggregatedSentenceScoresfulltext_resultsFSSVmeanPoolingCommonCore_bm25tar.txt'
 with open(dirToWrite, 'w') as f:
     for item in resultslst:
         f.write("%s\n" % item)
