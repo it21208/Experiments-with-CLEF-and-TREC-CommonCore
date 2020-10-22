@@ -17,10 +17,14 @@ for row in reader:
     
 newlist = []
 for topic in TOPICS_LIST:
+    rank = 1
     for k, v in d.items():
         if v == topic:
-            newlist.append(k)    
-
+            splitk = k.split()
+            splitk[3] = str(rank)
+            newlist.append(" ".join(splitk) + '\n')
+            rank += 1
+        
 with open('/home/pfb16181/Downloads/sorted.predict.mb_core17', 'w') as f:
     for item in newlist:
         f.write("%s" % item)
