@@ -26,7 +26,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-//@github author pfb16181 => Alexandros Ioannidis
+// Please make sure to quote me if you use this code, cheers.  
+//@github author pfb16181 => Alexandros Ioannidis, Date 03 November 2020.
 public class ClefCollection extends DocumentCollection<ClefCollection.Document> {
     private static final Logger LOG = LogManager.getLogger(ClefCollection.class);
     public ClefCollection(Path path) {
