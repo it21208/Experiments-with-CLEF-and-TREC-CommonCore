@@ -139,25 +139,11 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
         }
     }
     
-    
-    
-    
-    
-    
-
-
-    // We intentionally segregate the Anserini CLEFDocument from the parsed document below.
-    /**
-     * Raw container class for a document from New York Times Annotated Corpus.
-     * This was originally distributed as part of the corpus as a class called
-     * {@code NYTCorpusDocument}.
-     */
     public static class RawDocument {
 
-        /**
-         * The GUID field specifies a an integer that is guaranteed to be unique
-         * for every document in the corpus.
-         */
+        
+      // The GUID field specifies a an integer that is guaranteed to be unique for every document in the corpus.
+        
         protected int guid;
         protected String articleTitle;
         protected String articleAbstract;
@@ -237,17 +223,11 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
         
     }
 
-    /**
-     * Parser for a document from New York Times Annotated Corpus. This was
-     * originally distributed as part of the corpus as a class called
-     * {@code NYTCorpusDocumentParser}.
-     */
     public static class Parser {
         
         private static final String PMID_TEXT = "PMID";
         private static final String TITLE_TEXT = "ArticleTitle";
         private static final String ABSTRACT_TEXT = "Abstract";
-        
 
         public ClefCollection.Document parseFile(BufferedReader bRdr, File fileName) throws IOException {
             ClefCollection.RawDocument raw = parseCLEFCorpusDocumentFromBufferedReader(bRdr, fileName);
@@ -257,17 +237,7 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             return d;
         }
 
-        /**
-         * Parse an New York Times Document from a file.
-         *
-         * @param file the file from which to parse the document
-         * @param validating true if the file is to be validated against the
-         * NITF DTD and false if it is not. It is recommended that validation be
-         * disabled, as all documents in the corpus have previously been
-         * validated against the NITF DTD.
-         * @return the parsed document, or null if an error occurs
-         */
-        public RawDocument parseNYTCorpusDocumentFromFile(File file, boolean validating) {
+        public RawDocument parseCLEFCorpusDocumentFromFile(File file, boolean validating) {
             org.w3c.dom.Document document = null;
             if (validating) {
                 document = loadValidating(file);
@@ -277,14 +247,6 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             return parseCLEFCorpusDocumentFromDOMDocument(file, document);
         }
 
-        /**
-         * Parse a New York Time Document from BufferedReader. The parameter
-         * `file` is used only to feed in other methods
-         *
-         * @param file the file from which to parse the document
-         * @param bRdr the BufferedReader of file
-         * @return the parsed document, or null if an error occurs
-         */
         public RawDocument parseCLEFCorpusDocumentFromBufferedReader(BufferedReader bRdr, File file) {
             org.w3c.dom.Document document = loadFromBufferedReader(bRdr, file);
             return parseCLEFCorpusDocumentFromDOMDocument(file, document);
@@ -319,6 +281,7 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
                 String name = child.getNodeName();
                 if (name.equals(PMID_TEXT)) {
                     String docIdString = getAttributeValue(child, PMID_TEXT);
+                    System.out.println(docIdString);
                     if (docIdString != null) {
                         try {
                             ldcDocument.setGuid(Integer.parseInt(docIdString));
@@ -329,11 +292,13 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
                     }
                 } else if (name.equals(TITLE_TEXT)) {
                     String articleTitleString = getAttributeValue(child, TITLE_TEXT);
+                    System.out.println(articleTitleString);
                     if (articleTitleString != null) {
                         ldcDocument.setArticleTitle(articleTitleString);
                     }
                 } else if (name.equals(ABSTRACT_TEXT)) {
                     String abstractText = getAllText(child).trim();
+                    System.out.println(abstractText);
                     if (abstractText != null) {
                         ldcDocument.setArticleAbstract(abstractText);
                     }   
@@ -342,8 +307,7 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             return ldcDocument;
         }
 
-        
-        
+
         private String getAttributeValue(Node node, String attributeName) {
             NamedNodeMap attributes = node.getAttributes();
             if (attributes != null) {
@@ -355,7 +319,6 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             return null;
         }
         
-        
         private String getAllText(Node node) {
             List<Node> textNodes = getNodesByTagName(node, "AbstractText"); //#text
             StringBuffer sb = new StringBuffer();
@@ -364,16 +327,13 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             }
             return sb.toString().trim();
         }
-        
-        
+
         private List<Node> getNodesByTagName(Node node, String tagName) {
             List<Node> matches = new ArrayList<Node>();
             recursiveGetNodesByTagName(node, tagName.toLowerCase(), matches);
             return matches;
         }
-        
-        
-        
+
         private void recursiveGetNodesByTagName(Node node, String tagName, List<Node> matches) {
             String name = node.getNodeName();
             if (name != null && name.toLowerCase().equals(tagName)) {
@@ -387,8 +347,6 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
                 }
             }
         }
-        
-        
         
         private org.w3c.dom.Document loadValidating(File file) {
             try {
@@ -475,7 +433,5 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             }
             return null;
         }
-
     }
-
 }
