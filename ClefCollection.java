@@ -1,8 +1,6 @@
 package io.anserini.collection;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -29,15 +27,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/**
- *
- * @author pfb16181
- */
-/**
- * A classic CLEF document collection.
- */
+//@author pfb16181
 public class ClefCollection extends DocumentCollection<ClefCollection.Document> {
-
     private static final Logger LOG = LogManager.getLogger(ClefCollection.class);
 
     public ClefCollection(Path path) {
@@ -49,12 +40,9 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
     public FileSegment<ClefCollection.Document> createFileSegment(Path p) throws IOException {
         return new Segment(p);
     }
-
-    /* This class works for both compressed
-      * <code>tgz</code> files or uncompressed <code>xml</code> files.
-     */
+    
+    // <code>tgz</code> files or uncompressed <code>xml</code> files.
     public static class Segment extends FileSegment<ClefCollection.Document> {
-
         private final ClefCollection.Parser parser = new ClefCollection.Parser();
         private TarArchiveInputStream tarInput = null;
         private ArchiveEntry nextEntry = null;
@@ -92,16 +80,12 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             if (nextEntry == null) {
                 throw new NoSuchElementException();
             }
-            // an ArchiveEntry may be a directory, so we need to read a next one.
-            //   this must be done after the null check.
+            // an ArchiveEntry may be a directory, so we need to read a next one. this must be done after the null check.
             if (nextEntry.isDirectory()) {
                 getNextEntry();
             }
         }
     }
-
-    
-    
     
     public static class Document implements SourceDocument {
 
@@ -140,16 +124,12 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
     }
     
     public static class RawDocument {
-
-        
       // The GUID field specifies a an integer that is guaranteed to be unique for every document in the corpus.
-        
         protected int guid;
         protected String articleTitle;
         protected String articleAbstract;
         protected String body;
-        /* The file from which this object was read. */
-        protected File sourceFile;
+        protected File sourceFile; // The file from which this object was read.
 
         public File getSourceFile() {
             return sourceFile;
@@ -191,7 +171,6 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             this.articleAbstract = articleAbstract;
         }
 
-
         private String ljust(String s, Integer length) {
             if (s.length() >= length) {
                 return s;
@@ -224,7 +203,6 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
     }
 
     public static class Parser {
-        
         private static final String PMID_TEXT = "PMID";
         private static final String TITLE_TEXT = "ArticleTitle";
         private static final String ABSTRACT_TEXT = "Abstract";
@@ -377,8 +355,7 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
                 factory.setNamespaceAware(false);
             }
             DocumentBuilder builder = factory.newDocumentBuilder();
-            // Create the builder and parse the file
-            org.w3c.dom.Document doc = builder.parse(new File(filename));
+            org.w3c.dom.Document doc = builder.parse(new File(filename)); // Create the builder and parse the file
             return doc;
         }
 
@@ -386,16 +363,14 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
             org.w3c.dom.Document document;
             StringBuffer sb = new StringBuffer();
             try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(file), "UTF8"));
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
                 String line = null;
                 while ((line = in.readLine()) != null) {
                     sb.append(line + "\n");
                 }
                 String xmlData = sb.toString();
-                xmlData = xmlData.replace("<!DOCTYPE nitf "
-                        + "SYSTEM \"http://www.nitf.org/"
-                        + "IPTC/NITF/3.3/specification/dtd/nitf-3-3.dtd\">", "");
+                xmlData = xmlData.replace("<!DOCTYPE nitf " + "SYSTEM \"http://www.nitf.org/"
+                                                            + "IPTC/NITF/3.3/specification/dtd/nitf-3-3.dtd\">", "");
                 document = parseStringToDOM(xmlData, "UTF-8", file);
                 in.close();
                 return document;
@@ -414,8 +389,7 @@ public class ClefCollection extends DocumentCollection<ClefCollection.Document> 
 
         private org.w3c.dom.Document parseStringToDOM(String s, String encoding, File file) {
             try {
-                DocumentBuilderFactory factory = DocumentBuilderFactory
-                        .newInstance();
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 factory.setValidating(false);
                 InputStream is = new ByteArrayInputStream(s.getBytes(encoding));
                 org.w3c.dom.Document doc = factory.newDocumentBuilder().parse(is);
