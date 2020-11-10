@@ -2,11 +2,11 @@ from csv import reader
 from os import listdir
 from os.path import isfile, join
 import sys
+import pandas as pd
 import csv
 csv.field_size_limit(sys.maxsize)
 
 TOPICS_PATH = '/home/pfb16181/MeLIR/resources/topics/all.topics2017_2018_2019/'
-PATH_TO_SAVE_CSV_1718TestCLEF = '/home/pfb16181/NetBeansProjects/birch/data/datasets/clef1718_sents.csv'
 
 CLEF_TOPIC_LIST2017=[
     'CD007431', 'CD008081', 'CD008760', 'CD008782', 'CD008803', 'CD009135', 'CD009185', 'CD009372', 'CD009519', 'CD009551',
@@ -21,9 +21,6 @@ CLEF_TOPIC_LIST2018 = [
 ]
 
 CLEF_TOPIC_LIST = CLEF_TOPIC_LIST2017 + CLEF_TOPIC_LIST2018
-
-# onlyfiles = [f for f in listdir(TOPICS_PATH) if isfile(join(TOPICS_PATH, f))]
-# print(onlyfiles)
 
 LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC = []
 full_csv_file = []
@@ -54,21 +51,31 @@ list_saved_pmids_for_1718TestCLEF = []
 with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef171819_sents.csv', 'r') as read_obj:
     csv_reader = reader(read_obj)
     for row in csv_reader:
-        docid = row[0].split('\t')[-3].split('_')[0]     
-        if docid in flat_LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC:
-            list_saved_pmids_for_1718TestCLEF.append(docid)
+        try:
+            docid = row[0].split('\t')[-3].split('_')[0]     
+            if docid in flat_LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC:
+                list_saved_pmids_for_1718TestCLEF.append(docid)
+        except Exception:
+            pass
         
 print('created list_saved_pmids_for_1718TestCLEF..')
-
 new_csv_file = []
+cnt = 0
 for row in full_csv_file:
-    if row[0].split('\t')[-3].split('_')[0] in list_saved_pmids_for_1718TestCLEF:
-        new_csv_file.append(row[0].split('\t'))
-        
-print('created new_csv_file..')
+    try:
+        if row[0].split('\t')[-3].split('_')[0] in list_saved_pmids_for_1718TestCLEF:
+            new_csv_file.append(row[0].split('\t'))
+    except Exception as e:
+        print(row)
+        cnt += 1        
+print('created new_csv_file.. with {} exceptions'.format(cnt))
 
-with open('PATH_TO_SAVE_CSV_1718TestCLEF', 'w+') as f:
-    write = csv.writer(f)
-    write.writerows(new_csv_file)
-
+PATH_TO_SAVE_CSV_1718TestCLEF = '/home/pfb16181/NetBeansProjects/birch/data/datasets/clef1718_sents.csv'
+df = pd.DataFrame(new_csv_file)
+df.to_csv(PATH_TO_SAVE_CSV_1718TestCLEF, index=False, header=False)
 print('written new_csv_file')
+
+# with open(PATH_TO_SAVE_CSV_1718TestCLEF, 'w+') as f:
+#     write = csv.writer(f)
+#     write.writerows(new_csv_file)
+
