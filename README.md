@@ -5,5 +5,7 @@
 
 ###### Inspired by: 
 > https://github.com/UKPLab/sentence-transformers
+
 > https://github.com/castorini/birch
+
 > https://github.com/castorini/anserini
