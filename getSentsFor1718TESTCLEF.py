@@ -9,12 +9,7 @@ csv.field_size_limit(sys.maxsize)
 TOPICS_PATH = '/home/pfb16181/MeLIR/resources/topics/all.topics2017_2018_2019/'
 
 CLEF_TOPIC_LIST = [
-    'CD007431', 'CD008081', 'CD008760', 'CD008782', 'CD008803', 'CD009135', 'CD009185', 'CD009372', 'CD009519', 'CD009551',
-    'CD009579', 'CD009647', 'CD009786', 'CD009925', 'CD010023', 'CD010173', 'CD010276', 'CD010339', 'CD010386', 'CD010542',
-    'CD010633', 'CD010653', 'CD010705', 'CD010772', 'CD010775', 'CD010783', 'CD010860', 'CD010896', 'CD011145', 'CD012019',
-    'CD008122', 'CD008587', 'CD008759', 'CD008892', 'CD009175', 'CD009263', 'CD009694', 'CD010213', 'CD010296', 'CD010502', 
-    'CD010657', 'CD010680', 'CD010864', 'CD011053', 'CD011126', 'CD011420', 'CD011431', 'CD011515', 'CD011602', 'CD011686',
-    'CD011912', 'CD011926', 'CD012009', 'CD012010', 'CD012083', 'CD012165', 'CD012179', 'CD012216', 'CD012281', 'CD012599'
+    'CD010860'
 ]
 
 LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC = []
@@ -42,13 +37,15 @@ print('created unique_flat_LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC.. with size {}'
 list_lines_saved_for_1718TestCLEF = []
 cnt = 0
 cnt2 = 0
-with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef171819_sents.csv', 'r') as read_obj:
+with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef171819.csv', 'r') as read_obj:
     csv_reader = reader(read_obj)
-    for row in csv_reader:
+    for idx, row in enumerate(csv_reader):
         try:
             line = row[0]
             docid = line.split('\t')[-3].split('_')[0]
-            if docid in unique_flat_LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC:
+            qid = line.split('\t')[-2]
+            # if docid in unique_flat_LIST_OF_LISTs_OF_PMIDS_FOR_EACH_TOPIC and qid in CLEF_TOPIC_LIST:
+            if qid in CLEF_TOPIC_LIST:
                 modified_line = row[0]
                 temp = modified_line.split('\t') 
                 temp[-1] = str(cnt2)      
@@ -56,11 +53,11 @@ with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef171819_sents.
                 cnt2 += 1
         except Exception:
             cnt += 1
-
-print('created list_lines_saved_for_1718TestCLEF.. with {} exceptions and size = {}'.format(cnt, len(list_lines_saved_for_1718TestCLEF)))
+print(row[0])
+print('created list_lines_saved_for_1718TestCLEF.. with {} exceptions and size = {}. length of csv reader {}'.format(cnt, len(list_lines_saved_for_1718TestCLEF), idx))
 
 sep = "\t"
-with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef1718_sents.csv', 'w') as csv:
+with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef.csv', 'w') as csv:
     for row in list_lines_saved_for_1718TestCLEF:
         csv.write(sep.join(row))
         csv.write("\n")
