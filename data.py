@@ -1,7 +1,6 @@
 import os
 import random
 import sys
-
 import numpy as np
 import torch
 
@@ -11,7 +10,6 @@ np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(RANDOM_SEED)
-
 
 class DataGenerator(object):
     def __init__(self, data_path, data_name, batch_size, tokenizer, split, device='cuda'):
@@ -25,8 +23,7 @@ class DataGenerator(object):
             self.fid = open(os.path.join(data_path, 'datasets', '{}/{}/id.txt'.format(data_name, split)))
 
             for a, b, sim, ID in zip(self.fa, self.fb, self.fsim, self.fid):
-                self.data.append([sim.replace('\n', ''), a.replace('\n', ''),
-                                  b.replace('\n', ''), ID.replace('\n', '')])
+                self.data.append([sim.replace('\n', ''), a.replace('\n', ''), b.replace('\n', ''), ID.replace('\n', '')])
         else:
             self.f = open(os.path.join(data_path, 'datasets', '{}.csv'.format(data_name)))
 
@@ -55,8 +52,7 @@ class DataGenerator(object):
         tokenized_text = self.tokenizer.tokenize(text)
         tokenized_text.insert(0, '[CLS]')
         tokenized_text.append('[SEP]')
-        # Convert token to vocabulary indices
-        indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
+        indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text) # Convert token to vocabulary indices
         return indexed_tokens
 
     def tokenize_two(self, a, b):
@@ -66,8 +62,7 @@ class DataGenerator(object):
         tokenized_text_b.append('[SEP]')
         segments_ids = [0] * len(tokenized_text_a) + [1] * len(tokenized_text_b)
         tokenized_text = tokenized_text_a + tokenized_text_b
-        # Convert token to vocabulary indices
-        indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
+        indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text) # Convert token to vocabulary indices
         return indexed_tokens, segments_ids
 
     def load_batch(self):
@@ -79,42 +74,30 @@ class DataGenerator(object):
             self.start = False
             instance = self.get_instance()
             if 'robust04' in self.data_name or 'core' or 'clef' in self.data_name:
-                
                 if 'robust04' in self.data_name or 'core' in self.data_name:
                     label, sim, a, b, qno, docno, qid, docid = instance
-                
-                if 'clef' in self.data_name:
+                elif 'clef' in self.data_name:
                     label = instance[0]
                     sim = instance[1]
-                    a = instance[2] 
-                    # b = instance
+                    a = instance[2]+instance[3]
                     qno = instance[-4]
-                    docno = instance[-3]
+                    docno = instance[-3].split('_')[0]
                     qid =  instance[-2]
                     docid = instance[-1] 
-                    # --------------------
-                    del instance[0:3]
-                    K = 4
-                    # using negative list slicing remove last K elements
-                    sentence_text_lst = instance[: -K or None]
-                    
-                    temp = " ".join(sentence_text_lst)
+                    temp = instance[4]
+                    # temp = " ".join(sentence_text_lst)
                     sentence_text_lst = temp.split()
-                    
-                    # print(len(sentence_text_lst))
-                    
-                    # if Token indices sequence length is longer than the specified max sequence length for this BERT model (len(words) > 512).
-                    # Running this sequence through BERT will result in indexing errors. So I need to control this.
+# If Token indices sequence length is longer than the specified max sequence length for BERT len(words) > 512. Running this sequence through BERT will result in indexing errors.
                     if len(sentence_text_lst) > 512:
                         sentence_text_lst = sentence_text_lst[:512]
                         b = " ".join(sentence_text_lst)                       
                     else:
                         b = " ".join(sentence_text_lst)
                 
-                # print(len(b))
                 # qid = int(qid)
                 qid = int(qid[2:])
-                docid = int(docid)
+                docid = int(docno)
+                # docid = int(docid)
                 qid_batch.append(qid)
                 docid_batch.append(docid)
             else:
@@ -128,23 +111,22 @@ class DataGenerator(object):
                     qid = ID
                 qid_batch.append(int(qid))
             
-            # print(len(a) + len(b))
-            if len(a)+len(b) > 2000:
+            while True:
                 length_a = len(a)
                 length_b = len(b)
                 middle_index_a = length_a//2
                 middle_index_b = length_b//2
                 a = a[:middle_index_a]
                 b = b[:middle_index_b]
+                if len(a)+len(b) <= 1500:
+                    break
                 
             combine_index, segments_ids = self.tokenize_two(a, b)
             test_batch.append(torch.tensor(combine_index))
             token_type_ids_batch.append(torch.tensor(segments_ids))
             mask_batch.append(torch.ones(len(combine_index)))
             label_batch.append(int(label))
-                        
-            if len(test_batch) >= self.batch_size or self.epoch_end():
-                # Convert inputs to PyTorch tensors
+            if len(test_batch) >= self.batch_size or self.epoch_end(): # Convert inputs to PyTorch tensors
                 tokens_tensor = torch.nn.utils.rnn.pad_sequence(test_batch, batch_first=True, padding_value=0).to(self.device)
                 segments_tensor = torch.nn.utils.rnn.pad_sequence(token_type_ids_batch, batch_first=True, padding_value=0).to(self.device)
                 mask_tensor = torch.nn.utils.rnn.pad_sequence(mask_batch, batch_first=True, padding_value=0).to(self.device)
