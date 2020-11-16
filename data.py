@@ -85,7 +85,6 @@ class DataGenerator(object):
                     qid =  instance[-2]
                     docid = instance[-1] 
                     temp = instance[4]
-                    # temp = " ".join(sentence_text_lst)
                     sentence_text_lst = temp.split()
 # If Token indices sequence length is longer than the specified max sequence length for BERT len(words) > 512. Running this sequence through BERT will result in indexing errors.
                     if len(sentence_text_lst) > 512:
@@ -110,7 +109,6 @@ class DataGenerator(object):
                 else:
                     qid = ID
                 qid_batch.append(int(qid))
-            
             while True:
                 length_a = len(a)
                 length_b = len(b)
@@ -134,5 +132,4 @@ class DataGenerator(object):
                 qid_tensor = torch.tensor(qid_batch, device=self.device)
                 docid_tensor = torch.tensor(docid_batch, device=self.device)
                 return (tokens_tensor, segments_tensor, mask_tensor, label_tensor, qid_tensor, docid_tensor)
-
         return None

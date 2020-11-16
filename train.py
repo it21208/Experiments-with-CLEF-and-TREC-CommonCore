@@ -11,7 +11,6 @@ torch.manual_seed(RANDOM_SEED)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(RANDOM_SEED)
 
-
 def train(args):
     if args.load_trained:
         last_epoch, arch, model, tokenizer, scores = load_checkpoint(args.model_path)
@@ -30,9 +29,12 @@ def train(args):
         tr_loss = 0
         while True:
             batch = train_dataset.load_batch()
-            print('batch size = ',len(batch))
-            if batch is None:
-                break
+            # print('batch size = ',len(batch))
+            ''' The if condition below is problematic. The code does not go inside the if block statement which causes an endless loop.  '''
+            # if batch is None:
+            #     break
+            if batch is None or step == 3:
+                break 
             tokens_tensor, segments_tensor, mask_tensor, label_tensor, _, _ = batch
             loss = model(tokens_tensor, segments_tensor, mask_tensor, label_tensor)
             loss.backward()

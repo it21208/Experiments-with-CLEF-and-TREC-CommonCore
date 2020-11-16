@@ -61,7 +61,6 @@ def main():
 
             collection_path = os.path.join(datasets_path, '{}_sents.csv'.format(args.collection))
             predictions_path = os.path.join(args.data_path, 'predictions', 'predict.' + experiment)
-
             top_doc_dict, doc_bm25_dict, sent_dict, q_dict, doc_label_dict = eval_bm25(collection_path)
             score_dict = load_bert_scores(predictions_path, q_dict, sent_dict)
 
