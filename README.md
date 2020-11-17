@@ -1,6 +1,7 @@
 #### Author: Alexandros Ioannidis
 ##### Date: 15 September 2020
-##### Some processing scripts for CLEF and TREC CommonCore data collections to assist deep learning with Hedwigs BERT and SBERT models.
+##### Update Date: 27 November 2020
+##### Some processing scripts for CLEF and TREC CommonCore 2017 data collections to assist deep learning with Birch, Hedwigs BERT model and UKPLab's SBERT model.
 
 
 ###### Inspired by: 
