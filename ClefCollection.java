@@ -27,7 +27,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-//github  @author pfb16181 => Alexandros Ioannidis, Date = 3 November 2020
+//github  @author pfb16181 => Alexandros Ioannidis, Date Created = 3 November 2020, Date Updated 25 Nov 2020
 public class ClefCollection extends DocumentCollection<ClefCollection.Document> {
     private static final Logger LOG = LogManager.getLogger(ClefCollection.class);
 
