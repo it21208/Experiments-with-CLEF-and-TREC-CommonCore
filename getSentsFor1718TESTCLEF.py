@@ -79,7 +79,9 @@ with open('/home/pfb16181/NetBeansProjects/birch/data/datasets/clef171819.csv', 
         except Exception:
             cnt += 1
 
-print('created list_lines_saved_for_1718TestCLEF.. with {} exceptions and size = {}. length of csv reader {}'.format(cnt, len(list_lines_saved_for_1718TestCLEF), idx))
+print('created list_lines_saved_for_1718TestCLEF.. with {} exceptions and size = {}. length of csv reader {}'.format(cnt, 
+                                                                                                                     len(list_lines_saved_for_1718TestCLEF),
+                                                                                                                     idx))
 
 # write results to output.
 sep = "\t"
