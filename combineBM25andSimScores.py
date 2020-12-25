@@ -1,8 +1,5 @@
 #  author: alexandros ioannidis
 
-# Does it really require you do that? Can you know think carefully about how documents are being scored, and why they would get a 
-# score or not? And alternatively, if a document is not scored by Lucene, can’t you just add that document to the end of the list with a score of zero?
-
 import sys 
 import operator
 
