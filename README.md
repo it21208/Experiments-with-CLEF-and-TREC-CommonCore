@@ -11,4 +11,6 @@
 
 > https://github.com/castorini/anserini
 
-##### ! This repository includes **purposely** experimental scripts developed for different open-source (Information Retrieval and Deep Learning) projects. 
+```diff
+- ##### ! This repository includes **purposely** experimental scripts developed for different open-source (Information Retrieval and Deep Learning) projects. 
+```
