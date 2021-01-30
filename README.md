@@ -16,4 +16,4 @@
 - This repository includes purposely experimental scripts developed for different open-source (Information Retrieval and Deep Learning) projects. 
 ```
 
-> Some Python scripts and Java classes to make several open source toolkits to work with CLEF (PubMed docs) and TREC Common Core datasets. The code developed aimed to improve document classification by exploring some pretrained word embeddings like BERT and PubMedBERT and to investigate a Semantic search approach incorporating the Sentence-BERT model for both datasets.
+> This repository contains some Python scripts and Java classes which extend some popular open source toolkits on Github like Anserini, Hedwig, sentence-transformers and Birch to make these work with my CLEF (PubMed systematic reviews) and TREC Common Core (NYT 2017 articles) datasets. The code developed aimed to improve binary document classification for technology-assisted reviews by exploring some pretrained word embeddings like BERT and PubMedBERT and furthermore to investigate a Semantic search approach incorporating the Sentence-BERT model for both datasets.
