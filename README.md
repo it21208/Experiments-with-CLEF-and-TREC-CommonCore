@@ -15,3 +15,5 @@
 ```diff
 - This repository includes purposely experimental scripts developed for different open-source (Information Retrieval and Deep Learning) projects. 
 ```
+
+> Some Python scripts and Java classes to make several open source toolkits to work with CLEF (PubMed docs) and TREC Common Core datasets. The code developed aimed to improve document classification by exploring some pretrained word embeddings like BERT and PubMedBERT and to investigate a Semantic search approach incorporating the Sentence-BERT model for both datasets.
