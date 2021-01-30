@@ -13,7 +13,7 @@
 > https://github.com/castorini/anserini
 
 ```diff
-- This repository includes <ins>purposely random</ins> experimental scripts developed for different open-source (Information Retrieval and Deep Learning) projects. 
+- This repository includes Purposely Random experimental scripts developed for different open-source (Information Retrieval and Deep Learning) projects. 
 ```
 
 
