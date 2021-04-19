@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4700069.svg)](https://doi.org/10.5281/zenodo.4700069)
 #### Author: Alexandros Ioannidis
 ##### Date: 15 September 2020
 ##### Update Date: 27 November 2020
